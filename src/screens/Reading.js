@@ -8,22 +8,33 @@ import { useFocusEffect } from '@react-navigation/native';
 import { BaseManager } from '../utils/SqliteDb'
 import Pagination from 'react-native-pagination';//{Icon,Dot} also available
 import { BookPagesScroll } from '../components/BookPagesScroll';
-import { ScrollView } from 'react-native-gesture-handler';
+import { ScrollView, TextInput } from 'react-native-gesture-handler';
 
 var db = new BaseManager()
+var pageSize = 0;
 export const Reading = ({ route }) => {
 
-    const { book } = route.params
+    const [book, setBook] = useState({})
+    // To divide the pages
     const [bookContent, setBookContent] = useState([])
+
     const [fontSize, setFontSize] = useState(18)
     const [justify, setJustify] = useState('auto')
     const [darkMode, setDarkMode] = useState('white')
     const [color, setColor] = useState('black')
+
     const [isEnabledDark, setIsEnabledDark] = useState(false);
     const [isEnabledFavorite, setIsEnabledFavorite] = useState(false);
     const [visibleSetting, setVisibleSetting] = useState(false)
-    const [translateWord, setTranslateWord] = useState('')
     const [footerVisible, setFooterVisible] = useState(false)
+
+    const [translateWord, setTranslateWord] = useState('')
+    const [pageNumber, setPageNumber] = useState(1)
+
+
+    useEffect(() => {
+        setBook(Object.assign(book, route.params.book))
+    }, [route.params.book.title])
 
     useFocusEffect(
         React.useCallback(() => {
@@ -31,35 +42,32 @@ export const Reading = ({ route }) => {
             setVisibleSetting(false)
             setFooterVisible(false)
             db.getBookByTitle(book.title).then(res => {
+                // If it is favorite, set true
                 if (res === 1) setIsEnabledFavorite(true)
             }).catch(er => {
                 console.log("Error", er);
-
             })
 
             const bookLenght = book.content.length
-            const wordsNumbersInAPage = 690
-
-            const pageSize = bookLenght / wordsNumbersInAPage
+            const wordsNumbersInAPage = 680
+            pageSize = bookLenght / wordsNumbersInAPage
             let startText = 0
             let endText = wordsNumbersInAPage
             let gatheredContents = []
             for (let index = 0; index < pageSize; index++) {
                 let dividedText = book.content.substring(startText, endText)
                 startText = endText
-                endText = endText * 2
-                console.log(dividedText);
-                
+                endText = 690 + endText
                 gatheredContents.push({ dividedText })
             }
-
             setBookContent([...gatheredContents])
-
-
         }, [])
     );
+
+
+
+
     const onClickSetting = () => {
-        console.log(bookContent);
 
         setVisibleSetting(!visibleSetting)
     }
@@ -135,8 +143,20 @@ export const Reading = ({ route }) => {
         setTranslateWord(content)
         setFooterVisible(true)
     }
+
+    //https://stackoverflow.com/questions/43370807/react-native-get-current-page-in-flatlist-when-using-pagingenabled
+    const onScrollEnd = (e) => {
+        let contentOffset = e.nativeEvent.contentOffset;
+        let viewSize = e.nativeEvent.layoutMeasurement;
+        let pageNum = Math.floor(contentOffset.x / viewSize.width);
+        // Increasing one because of starting from zero
+        pageNum++;
+        setPageNumber(pageNum)
+    }
+    console.log(pageNumber);
+
     return (
-        <View style={[styles.container,{backgroundColor: darkMode,}]}>
+        <View style={[styles.container, { backgroundColor: darkMode, }]}>
             <View style={{ flexDirection: 'row' }}>
                 <Image source={{ uri: book.image || book.imageurl }} style={styles.image} />
                 <View style={{ flex: 0.9 }}>
@@ -147,10 +167,13 @@ export const Reading = ({ route }) => {
                 </View>
             </View>
             <ScrollView>
+                
+                <Text style={{ textAlign: 'center' }}>{pageNumber} / {parseInt(pageSize)} </Text>
                 <View style={styles.lineStyle} />
                 <BookPagesScroll
                     page={bookContent}
                     onTextPress={onTextPress}
+                    onScrollEnd={onScrollEnd}
                     fontSize={fontSize}
                     justify={justify}
                     color={color} />
@@ -172,11 +195,11 @@ export const Reading = ({ route }) => {
 const styles = StyleSheet.create({
     container: {
         paddingTop: 10,
-        paddingLeft:5
+        paddingLeft: 5
     },
     title: {
         fontSize: 28,
-        marginBottom: 25,
+        marginBottom: 5,
         fontFamily: 'Roboto-Medium',
         marginTop: 5
     },
@@ -186,7 +209,7 @@ const styles = StyleSheet.create({
     },
     lineStyle: {
         borderBottomColor: 'gray',
-        borderBottomWidth: 1,
+        borderBottomWidth: 0.2,
     },
     image: {
         height: 50,
