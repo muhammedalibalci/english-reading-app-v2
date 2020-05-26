@@ -4,7 +4,7 @@ import { SelectableText } from "@astrocoders/react-native-selectable-text";
 import Icon from 'react-native-vector-icons/FontAwesome'
 import SettingModal from '../components/SettingModal';
 import { Footer } from '../components/Footer';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { BaseManager } from '../utils/SqliteDb'
 import Pagination from 'react-native-pagination';//{Icon,Dot} also available
 import { BookPagesScroll } from '../components/BookPagesScroll';
@@ -12,6 +12,7 @@ import { ScrollView, TextInput } from 'react-native-gesture-handler';
 
 var db = new BaseManager()
 var pageSize = 0;
+var comePage = 0
 export const Reading = ({ route }) => {
 
     const [book, setBook] = useState({})
@@ -30,10 +31,19 @@ export const Reading = ({ route }) => {
 
     const [translateWord, setTranslateWord] = useState('')
     const [pageNumber, setPageNumber] = useState(1)
-
-
+    const [copyPageNumber, setCopyPageNumber] = useState(1)
     useEffect(() => {
         setBook(Object.assign(book, route.params.book))
+        db.getBookByTitle(book.title).then(res => {
+            setPageNumber(res[0].currentPage)
+            comePage = res[0].currentPage
+            
+            // If it is favorite, set true
+            if (res) setIsEnabledFavorite(true)
+
+        }).catch(er => {
+            console.log("Error", er);
+        })
     }, [route.params.book.title])
 
     useFocusEffect(
@@ -41,12 +51,6 @@ export const Reading = ({ route }) => {
             setIsEnabledFavorite(false)
             setVisibleSetting(false)
             setFooterVisible(false)
-            db.getBookByTitle(book.title).then(res => {
-                // If it is favorite, set true
-                if (res === 1) setIsEnabledFavorite(true)
-            }).catch(er => {
-                console.log("Error", er);
-            })
 
             const bookLenght = book.content.length
             const wordsNumbersInAPage = 680
@@ -68,7 +72,6 @@ export const Reading = ({ route }) => {
 
 
     const onClickSetting = () => {
-
         setVisibleSetting(!visibleSetting)
     }
 
@@ -100,7 +103,8 @@ export const Reading = ({ route }) => {
                 content: book.content,
                 image: book.imageurl,
                 gender: book.gender,
-                size: book.lenght
+                size: book.lenght,
+                currentPage: 0
             }
 
             db.addTable(data).then(res => {
@@ -149,12 +153,20 @@ export const Reading = ({ route }) => {
         let contentOffset = e.nativeEvent.contentOffset;
         let viewSize = e.nativeEvent.layoutMeasurement;
         let pageNum = Math.floor(contentOffset.x / viewSize.width);
-        // Increasing one because of starting from zero
+        // Increasing one because of pageNum is starting from zero
         pageNum++;
+        setCopyPageNumber(pageNum)
         setPageNumber(pageNum)
     }
-    console.log(pageNumber);
+    const addBookmark = () => {
+        db.updateData(book.title, pageNumber).then(res => {
+            console.log(res);
+        }).catch(er => {
+            console.log(er);
 
+        })
+        setCopyPageNumber(comePage)
+    }
     return (
         <View style={[styles.container, { backgroundColor: darkMode, }]}>
             <View style={{ flexDirection: 'row' }}>
@@ -166,14 +178,17 @@ export const Reading = ({ route }) => {
                     <Icon onPress={onClickSetting} name="font" size={24} color="orange" />
                 </View>
             </View>
-            <ScrollView>
-                
-                <Text style={{ textAlign: 'center' }}>{pageNumber} / {parseInt(pageSize)} </Text>
-                <View style={styles.lineStyle} />
+            <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                <Icon onPress={addBookmark} name={copyPageNumber === comePage ? "bookmark" : "bookmark-o"} size={20} />
+                <Text style={{ textAlign: 'center', marginLeft: 15 }}>{pageNumber} / {parseInt(pageSize)} </Text>
+            </View>
+            <ScrollView >
                 <BookPagesScroll
                     page={bookContent}
                     onTextPress={onTextPress}
                     onScrollEnd={onScrollEnd}
+                    comePage={comePage}
+                    pageNumber={pageNumber}
                     fontSize={fontSize}
                     justify={justify}
                     color={color} />
@@ -199,7 +214,6 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 28,
-        marginBottom: 5,
         fontFamily: 'Roboto-Medium',
         marginTop: 5
     },
