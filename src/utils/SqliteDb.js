@@ -8,7 +8,7 @@ export class BaseManager {
         this.sqlite.DEBUG(true);
         this.sqlite.enablePromise(true);
         this.sqlite.openDatabase({
-            name: "BooksDB4r",
+            name: "BooksDB4r8",
             location: "default"
         }).then((db) => {
             this.dbInstance = db;
@@ -20,7 +20,7 @@ export class BaseManager {
             this.dbInstance.executeSql(
                 " CREATE TABLE IF NOT EXISTS Book (" +
                 "id INTEGER PRIMARY KEY NOT NULL," +
-                "title TEXT," + "content TEXT," + "image TEXT," + "size TEXT," + "gender TEXT," + "currentPage INTEGER );"
+                "title TEXT," + "content TEXT," + "imageurl TEXT," + "size TEXT," + "gender TEXT," + "currentPage INTEGER );"
             ).then((val) => {
                 resolve(true)
             }).catch((err) => {
@@ -32,7 +32,7 @@ export class BaseManager {
     addTable(book) {
         return new Promise((resolve, reject) => {
             this.dbInstance.executeSql(
-                "INSERT INTO Book (title,content,image,size,gender,currentPage) VALUES (?,?,?,?,?,?)", [book.title, book.content, book.image, book.size, book.gender, book.currentPage]
+                "INSERT INTO Book (title,content,imageurl,size,gender,currentPage) VALUES (?,?,?,?,?,?)", [book.title, book.content, book.imageurl, book.size, book.gender, book.currentPage]
             ).then((val) => {
 
                 resolve(true);

@@ -1,24 +1,23 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, StyleSheet, FlatList, Image, Dimensions } from 'react-native'
-import { SelectableText } from "@astrocoders/react-native-selectable-text";
+import { View, Text, StyleSheet, Image, Dimensions } from 'react-native'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import SettingModal from '../components/SettingModal';
-import { Footer } from '../components/Footer';
-import { useFocusEffect, useIsFocused } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import { BaseManager } from '../utils/SqliteDb'
-import Pagination from 'react-native-pagination';//{Icon,Dot} also available
 import { BookPagesScroll } from '../components/BookPagesScroll';
-import { ScrollView, TextInput } from 'react-native-gesture-handler';
+import { ScrollView } from 'react-native-gesture-handler';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 var db = new BaseManager()
 var pageSize = 0;
-var comePage = 0
-export const Reading = ({ route }) => {
+var comingPage = 0
+
+
+export const Reading = ({ route, navigation }) => {
 
     const [book, setBook] = useState({})
-    // To divide the pages
+    // To divide to the pages
     const [bookContent, setBookContent] = useState([])
-
     const [fontSize, setFontSize] = useState(18)
     const [justify, setJustify] = useState('auto')
     const [darkMode, setDarkMode] = useState('white')
@@ -27,20 +26,17 @@ export const Reading = ({ route }) => {
     const [isEnabledDark, setIsEnabledDark] = useState(false);
     const [isEnabledFavorite, setIsEnabledFavorite] = useState(false);
     const [visibleSetting, setVisibleSetting] = useState(false)
-    const [footerVisible, setFooterVisible] = useState(false)
 
-    const [translateWord, setTranslateWord] = useState('')
     const [pageNumber, setPageNumber] = useState(1)
     const [copyPageNumber, setCopyPageNumber] = useState(1)
+
     useEffect(() => {
         setBook(Object.assign(book, route.params.book))
         db.getBookByTitle(book.title).then(res => {
             setPageNumber(res[0].currentPage)
-            comePage = res[0].currentPage
-            
+            comingPage = res[0].currentPage
             // If it is favorite, set true
             if (res) setIsEnabledFavorite(true)
-
         }).catch(er => {
             console.log("Error", er);
         })
@@ -48,28 +44,27 @@ export const Reading = ({ route }) => {
 
     useFocusEffect(
         React.useCallback(() => {
+
             setIsEnabledFavorite(false)
             setVisibleSetting(false)
-            setFooterVisible(false)
 
             const bookLenght = book.content.length
-            const wordsNumbersInAPage = 680
+            const wordsNumbersInAPage = 575
             pageSize = bookLenght / wordsNumbersInAPage
             let startText = 0
             let endText = wordsNumbersInAPage
             let gatheredContents = []
             for (let index = 0; index < pageSize; index++) {
                 let dividedText = book.content.substring(startText, endText)
+                endText;
                 startText = endText
-                endText = 690 + endText
+                endText = 600 + endText
                 gatheredContents.push({ dividedText })
             }
+
             setBookContent([...gatheredContents])
         }, [])
     );
-
-
-
 
     const onClickSetting = () => {
         setVisibleSetting(!visibleSetting)
@@ -101,7 +96,7 @@ export const Reading = ({ route }) => {
                 id: book.title,
                 title: book.title,
                 content: book.content,
-                image: book.imageurl,
+                imageurl: book.imageurl,
                 gender: book.gender,
                 size: book.lenght,
                 currentPage: 0
@@ -142,12 +137,9 @@ export const Reading = ({ route }) => {
         if (justify === "auto") setJustify('justify')
         if (justify === "justify") setJustify('auto')
     }
-
     const onTextPress = (event, content) => {
-        setTranslateWord(content)
-        setFooterVisible(true)
+        navigation.navigate('Translate', { word: content })
     }
-
     //https://stackoverflow.com/questions/43370807/react-native-get-current-page-in-flatlist-when-using-pagingenabled
     const onScrollEnd = (e) => {
         let contentOffset = e.nativeEvent.contentOffset;
@@ -158,36 +150,39 @@ export const Reading = ({ route }) => {
         setCopyPageNumber(pageNum)
         setPageNumber(pageNum)
     }
+
     const addBookmark = () => {
+        if (!isEnabledFavorite) {
+            alert("To use the bookmark, please add to the favorites")
+        }
         db.updateData(book.title, pageNumber).then(res => {
-            console.log(res);
         }).catch(er => {
             console.log(er);
-
         })
-        setCopyPageNumber(comePage)
+        setCopyPageNumber(comingPage)
     }
     return (
         <View style={[styles.container, { backgroundColor: darkMode, }]}>
-            <View style={{ flexDirection: 'row' }}>
-                <Image source={{ uri: book.image || book.imageurl }} style={styles.image} />
-                <View style={{ flex: 0.9 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Image source={{ uri: book.imageurl }} style={styles.image} />
+                <View >
                     <Text selectable style={[styles.title, { color: color }]}>{book.title} </Text>
                 </View>
-                <View style={{ flex: 0.1, marginTop: 10 }}>
+                <View style={{ marginTop: hp('2%'), marginRight: 10 }}>
                     <Icon onPress={onClickSetting} name="font" size={24} color="orange" />
                 </View>
             </View>
+
             <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
-                <Icon onPress={addBookmark} name={copyPageNumber === comePage ? "bookmark" : "bookmark-o"} size={20} />
-                <Text style={{ textAlign: 'center', marginLeft: 15 }}>{pageNumber} / {parseInt(pageSize)} </Text>
+                <Icon onPress={addBookmark} name={copyPageNumber === comingPage ? "bookmark" : "bookmark-o"} size={wp('5%')} />
+                <Text style={{ textAlign: 'center', marginLeft: 15, fontSize: wp('4%') }}>{pageNumber} / {parseInt(pageSize)} </Text>
             </View>
             <ScrollView >
                 <BookPagesScroll
                     page={bookContent}
                     onTextPress={onTextPress}
                     onScrollEnd={onScrollEnd}
-                    comePage={comePage}
+                    comingPage={comingPage}
                     pageNumber={pageNumber}
                     fontSize={fontSize}
                     justify={justify}
@@ -203,32 +198,25 @@ export const Reading = ({ route }) => {
                 toggleSwitchFavorite={toggleSwitchFavorite}
                 visibleSetting={visibleSetting}
             />
-            {footerVisible && <Footer translateWord={translateWord} />}
         </View>
     )
 }
 const styles = StyleSheet.create({
     container: {
         paddingTop: 10,
-        paddingLeft: 5
+        paddingLeft: 5,
+
     },
     title: {
-        fontSize: 28,
+        fontSize: wp('7%'),
         fontFamily: 'Roboto-Medium',
-        marginTop: 5
-    },
-    text: {
-        fontFamily: 'PTSerif-Italic',
-        lineHeight: 35
-    },
-    lineStyle: {
-        borderBottomColor: 'gray',
-        borderBottomWidth: 0.2,
+        marginTop: 8,
     },
     image: {
-        height: 50,
-        width: 50,
+        height: hp('8%'),
+        width: wp('15%'),
         borderRadius: 50,
-        marginRight: 20
+        marginTop: 3,
+        marginLeft: 5
     }
 })

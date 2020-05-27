@@ -1,35 +1,29 @@
 import React from 'react'
 import { View, FlatList, Dimensions, StyleSheet } from 'react-native'
 import { SelectableText } from '@astrocoders/react-native-selectable-text'
-var i = 0;
-export const BookPagesScroll = ({ page, comePage, fontSize, justify, color, onTextPress, onScrollEnd, pageNumber }) => {
-    //console.log("Pagenumber",pageNumber);
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
-
-
+// To run the scroll just one time 
+var counter = 0
+export const BookPagesScroll = ({ page, comingPage,fontSize,justify, color, onTextPress, onScrollEnd }) => {
     return (
         <FlatList
             data={page}
             ref={(ref) => { page = ref; }}
             keyExtractor={(item, index) => index.toString()}
             onContentSizeChange={() => {
-                console.log(comePage);
-
-                if (i === 0) {
+                if (counter === 0) {
                     if (page && page.scrollToIndex) {
-                        if (comePage != 0) {
-                            comePage--
-                            page.scrollToIndex({ index: comePage });
+                        if (comingPage != 0) {
+                            comingPage--
+                            page.scrollToIndex({ index: comingPage });
                         }
-                        page.scrollToIndex({ index: comePage });
+                        page.scrollToIndex({ index: comingPage });
                     }
                 }
-                i++;
-
-
+                counter++;
             }}
             onScroll={(e) => onScrollEnd(e)}
-
             renderItem={result => {
                 return (
                     <View style={styles.container}>
@@ -37,38 +31,36 @@ export const BookPagesScroll = ({ page, comePage, fontSize, justify, color, onTe
                             style={[
                                 styles.text,
                                 {
-                                    fontSize: fontSize,
-                                    textAlign: justify,
-                                    color: color
+                                    color,
+                                    fontSize,
+                                    justify
                                 }
                             ]
-
                             }
                             menuItems={["Translate", "Paint"]}
                             onSelection={({ eventType, content }) => { onTextPress(eventType, content) }}
                             value={result.item.dividedText + "..."}
                         />
-                    </View>)
+                    </View>
+                )
             }}
-
-            horizontal={true}
-
+            horizontal
             pagingEnabled
         />
     )
 }
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        marginTop: 10,
-        width: Dimensions.get("window").width - 5,
-        height: Dimensions.get("window").height,
-
+        marginTop: 5,
+        width: wp('100%')-5,
+        height: hp('100%'),
     },
-
     text: {
+        marginTop:5,
+        marginLeft:5,
+        fontSize: hp('3.3%'),
         fontFamily: 'PTSerif-Italic',
-        lineHeight: 35,
-    },
+        lineHeight: hp('5%'),
 
+    },
 })

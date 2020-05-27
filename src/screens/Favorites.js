@@ -5,6 +5,8 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import { StyleSheet } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { BaseManager } from '../utils/SqliteDb'
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+
 var db = new BaseManager()
 const Favorites = ({ navigation }) => {
 
@@ -21,16 +23,13 @@ const Favorites = ({ navigation }) => {
         db.getTable().then(res => {
             if (res.length === 0) setIsEmpty(true)
             console.log(res);
-
             setBooks(res)
         })
     }
 
     const onPressDelete = (title) => {
-        console.log(title);
         db.deleteData(title).then(res => {
             listBook()
-            
         }).catch(er => {
             console.log(er);
         })
@@ -39,20 +38,23 @@ const Favorites = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
+           
             <Text style={styles.title}>My Favorites</Text>
             {
                 books.map((l, i) => (
                     <ListItem
                         key={i}
-                        leftAvatar={{ source: { uri: l.image } }}
+                        leftAvatar={{ source: { uri: l.imageurl } }}
                         onPress={() => navigation.navigate('Reading', { book: l })}
                         title={l.title}
+                        titleStyle={{fontSize:wp('5%')}}
                         subtitle={l.gender}
+                        subtitleStyle={{fontSize:wp('4%')}}
                         rightElement={<Button
                             onPress={() => onPressDelete(l.title)}
                             icon={{
                                 name: "delete",
-                                size: 15,
+                                size: wp('4%'),
                                 color: "white"
                             }}
                             buttonStyle={{ backgroundColor: '#E74C3C' }}
@@ -67,7 +69,7 @@ const Favorites = ({ navigation }) => {
                 justifyContent: 'center'
             }}>
                 <View >
-                    <Icon name="ban" size={24} />
+                    <Icon name="ban" size={ wp('5%')} />
                 </View>
                 <View>
                     <Text style={styles.isEmpty}>List Empty</Text>
@@ -83,13 +85,13 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     title: {
-        fontSize: 28,
+        fontSize: wp('7%'),
         marginBottom: 10,
         fontFamily: 'Roboto-Black'
     },
 
     isEmpty: {
-        fontSize: 14,
+        fontSize:  wp('4%'),
         textAlign: "center",
         marginLeft: 5,
         fontFamily: 'Roboto-Medium'

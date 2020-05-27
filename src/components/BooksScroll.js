@@ -1,6 +1,7 @@
 import React from 'react'
 import { View, StyleSheet, Text, ScrollView } from 'react-native';
 import { BookList } from './BookList';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 export const BooksScroll = (props) => {
     return (
@@ -32,7 +33,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
     },
     title: {
-        fontSize: 24,
+        fontSize: wp('6%'),
         marginBottom: 5,
         fontFamily: 'Roboto-Light'
     }

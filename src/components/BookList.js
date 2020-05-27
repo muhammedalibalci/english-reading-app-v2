@@ -1,42 +1,38 @@
-import React, { useEffect, useState } from 'react'
-import { ScrollView, Image, StyleSheet, Text, ImageBackground, View, Button, TouchableOpacity } from 'react-native'
+import React from 'react'
+import { StyleSheet, Text, ImageBackground, View, TouchableOpacity } from 'react-native'
 import { Badge } from 'react-native-elements'
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+
 
 export const BookList = (props) => {
 
-
     let size = (
-        <Badge status="primary"  badgeStyle={{padding:5}} value={<Text style={styles.size}>Short</Text>} />
+        <Badge status="primary" badgeStyle={{ padding: 5 }} value={<Text style={styles.size}>Short</Text>} />
     )
     if (parseInt(props.book.lenght) > 3500) {
         size = (
-            <Badge status="success"  badgeStyle={{padding:5}} value={<Text style={styles.size}>Medium</Text>} />
+            <Badge status="success" badgeStyle={{ padding: 5 }} value={<Text style={styles.size}>Medium</Text>} />
         )
     }
     if (parseInt(props.book.lenght) > 10000) {
         size = (
-            <Badge status="warning"  badgeStyle={{padding:5}} value={<Text style={styles.size}>Long</Text>} />
+            <Badge status="warning" badgeStyle={{ padding: 5 }} value={<Text style={styles.size}>Long</Text>} />
         )
     }
 
     return (
-
         <View >
             <TouchableOpacity onPress={() => props.onClickBook(props.book.title)}>
-
                 <ImageBackground source={{ uri: props.book.imageurl }} style={styles.book}>
                     <View style={styles.insideText}>
                         {size}
                         <Badge
                             status="error"
-                            badgeStyle={{padding:7,marginTop:2}}
+                            badgeStyle={{ padding: 7, marginTop: 2 }}
                             value={<Text style={styles.genderText}>
                                 {props.book.gender}</Text>}>
-
                         </Badge>
-
                     </View>
-
                     <Text style={styles.text}>{props.book.title}</Text>
                 </ImageBackground>
             </TouchableOpacity>
@@ -45,9 +41,10 @@ export const BookList = (props) => {
 }
 const styles = StyleSheet.create({
     book: {
-        height: 250,
-        width: 150,
-        marginRight: 10
+        height: hp('40%'),
+        width: wp('40%'),
+        marginRight: 10,
+        resizeMode: 'stretch'
     },
     insideText: {
         position: 'relative',
@@ -66,11 +63,11 @@ const styles = StyleSheet.create({
     },
     genderText: {
         color: 'white',
-        fontSize: 12,
+        fontSize: wp('4%'),
     },
     text: {
         padding: 10,
-        fontSize: 16,
+        fontSize: wp('5%'),
         color: 'white',
         textAlign: 'center',
         fontFamily: 'Roboto-Black'
