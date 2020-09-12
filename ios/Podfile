@@ -44,8 +44,8 @@ def flipper_post_install(installer)
   end
 end
 
-target 'deneme' do
-  # Pods for deneme
+target 'English' do
+  # Pods for English
   pod 'FBLazyVector', :path => "../node_modules/react-native/Libraries/FBLazyVector"
   pod 'FBReactNativeSpec', :path => "../node_modules/react-native/Libraries/FBReactNativeSpec"
   pod 'RCTRequired', :path => "../node_modules/react-native/Libraries/RCTRequired"
@@ -83,7 +83,7 @@ target 'deneme' do
 
   pod 'react-native-webview', :path => '../node_modules/react-native-webview'
 
-  target 'denemeTests' do
+  target 'EnglishTests' do
     inherit! :complete
     # Pods for testing
   end
@@ -100,10 +100,10 @@ target 'deneme' do
   end
 end
 
-target 'deneme-tvOS' do
-  # Pods for deneme-tvOS
+target 'English-tvOS' do
+  # Pods for English-tvOS
 
-  target 'deneme-tvOSTests' do
+  target 'English-tvOSTests' do
     inherit! :search_paths
     # Pods for testing
   end

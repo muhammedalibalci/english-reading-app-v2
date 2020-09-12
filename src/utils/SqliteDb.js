@@ -5,7 +5,6 @@ export class BaseManager {
 
     constructor() {
         this.sqlite = SQLite;
-        this.sqlite.DEBUG(true);
         this.sqlite.enablePromise(true);
         this.sqlite.openDatabase({
             name: "BooksDB4r8",

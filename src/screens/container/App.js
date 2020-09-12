@@ -12,14 +12,19 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-nat
 
 console.disableYellowBox = true
 
-
-
-
 const BooksStack = createStackNavigator();
 
-function BooksStackScreen({route}) {
-  console.log("asdad",route);
-  
+function BooksStackScreen({route,navigation}) {
+
+  const routeName = route.state && route.state.routes[route.state.index].name
+  React.useEffect(() => {
+    if (routeName == "Reading") {
+      navigation.setOptions({ tabBarVisible: false });
+    }
+    else {
+      navigation.setOptions({ tabBarVisible: true });
+    }
+  }, [route])
   return (
     <BooksStack.Navigator>
       <BooksStack.Screen options={{headerShown:false}} name="Books" component={Books} />
@@ -31,7 +36,18 @@ function BooksStackScreen({route}) {
 
 const FavoritesStack = createStackNavigator();
 
-function FavoritesStackScreen() {
+function FavoritesStackScreen({route,navigation}) {
+
+  const routeName = route.state && route.state.routes[route.state.index].name
+  React.useEffect(() => {
+    if (routeName == "Reading") {
+      navigation.setOptions({ tabBarVisible: false });
+    }
+    else {
+      navigation.setOptions({ tabBarVisible: true });
+    }
+  }, [route])
+
   return (
     <FavoritesStack.Navigator  >
       <FavoritesStack.Screen options={{headerShown:false}} name="Favorites" component={Favorites} />
@@ -41,10 +57,7 @@ function FavoritesStackScreen() {
   );
 }
 
-
-
 const Tab = createBottomTabNavigator();
-
 
 export default function App() {
   return (
@@ -67,15 +80,10 @@ export default function App() {
         },
       })}
         tabBarOptions={{
-          activeTintColor: '#4285f4',
-          inactiveTintColor: 'gray',
-          style: {
-            padding: 10,
-          },
-          labelStyle: {
-            fontSize: 12,
-            fontFamily: 'Roboto-Medium'
-          },
+          activeTintColor: '#2E86C1',
+          inactiveTintColor: 'grey',
+          showLabel: false,
+        
         }}
       >
         <Tab.Screen name="Favorites" component={FavoritesStackScreen} />

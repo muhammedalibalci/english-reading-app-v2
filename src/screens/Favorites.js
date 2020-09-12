@@ -22,7 +22,6 @@ const Favorites = ({ navigation }) => {
         setIsEmpty(false)
         db.getTable().then(res => {
             if (res.length === 0) setIsEmpty(true)
-            console.log(res);
             setBooks(res)
         })
     }

@@ -1,84 +1,86 @@
-import React, { useState, useEffect } from 'react'
-import { View, Text, StyleSheet, Image, Dimensions } from 'react-native'
+import React, { useState, useEffect, useRef } from 'react'
+import { View, Text, StyleSheet, Image, Dimensions, AsyncStorage } from 'react-native'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import SettingModal from '../components/SettingModal';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { BaseManager } from '../utils/SqliteDb'
 import { BookPagesScroll } from '../components/BookPagesScroll';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp, heightPercentageToDP } from 'react-native-responsive-screen';
 import { ScrollView } from 'react-native-gesture-handler';
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 var db = new BaseManager()
-var pageSize = 0;
-var comingPage = 0
-
-
+var pageSize
+let positionX = 0
 export const Reading = ({ route, navigation }) => {
+    const isFocus = useIsFocused()
 
     const [book, setBook] = useState({})
     // To divide to the pages
     const [bookContent, setBookContent] = useState([])
-    const [fontSize, setFontSize] = useState(18)
+    const [fontSize, setFontSize] = useState(16)
     const [justify, setJustify] = useState('auto')
-    const [darkMode, setDarkMode] = useState('white')
-    const [color, setColor] = useState('black')
+    const [darkMode, setDarkMode] = useState('#273746')
+    const [color, setColor] = useState('white')
 
-    const [isEnabledDark, setIsEnabledDark] = useState(false);
+    const [isEnabledDark, setIsEnabledDark] = useState(true);
     const [isEnabledFavorite, setIsEnabledFavorite] = useState(false);
     const [visibleSetting, setVisibleSetting] = useState(false)
 
     const [pageNumber, setPageNumber] = useState(1)
-    const [copyPageNumber, setCopyPageNumber] = useState(1)
+    const scRef = useRef(null)
 
     useEffect(() => {
         setBook(Object.assign(book, route.params.book))
         db.getBookByTitle(book.title).then(res => {
-            setPageNumber(res[0].currentPage)
-            comingPage = res[0].currentPage
-            // If it is favorite, set true
-            if (res) setIsEnabledFavorite(true)
-        }).catch(er => {
-            console.log("Error", er);
+            if (res.length != 0) setIsEnabledFavorite(true)
         })
     }, [route.params.book.title])
-
     useFocusEffect(
         React.useCallback(() => {
-
             setIsEnabledFavorite(false)
             setVisibleSetting(false)
 
             const bookLenght = book.content.length
-            const wordsNumbersInAPage = 575
-            pageSize = bookLenght / wordsNumbersInAPage
+            const wordsNumbersInAnPage = heightPercentageToDP('100%') + 150
+            pageSize = bookLenght / wordsNumbersInAnPage
             let startText = 0
-            let endText = wordsNumbersInAPage
+            let endText = wordsNumbersInAnPage
             let gatheredContents = []
             for (let index = 0; index < pageSize; index++) {
                 let dividedText = book.content.substring(startText, endText)
-                endText;
+
                 startText = endText
-                endText = 600 + endText
+                endText += wordsNumbersInAnPage
                 gatheredContents.push({ dividedText })
             }
 
             setBookContent([...gatheredContents])
+
         }, [])
     );
+
 
     const onClickSetting = () => {
         setVisibleSetting(!visibleSetting)
     }
+    const savePosition = async () => {
 
+        const data = {
+            title: route.params.book.title,
+            position: positionX
+        }
+        await AsyncStorage.setItem('position', JSON.stringify(data))
+    }
+    if (!isFocus) {
+        savePosition()
+    }
     const toggleSwitchDark = () => {
 
         setIsEnabledDark(previousState => !previousState);
 
-        if (isEnabledDark) {
-            if (darkMode === "#273746") {
-                setDarkMode('white')
-                setColor('black')
-            }
+        if (isEnabledDark && darkMode === "#273746") {
+            setDarkMode('white')
+            setColor('black')
         }
         if (darkMode === "white") {
             setDarkMode('#273746')
@@ -146,47 +148,33 @@ export const Reading = ({ route, navigation }) => {
         let viewSize = e.nativeEvent.layoutMeasurement;
         let pageNum = Math.floor(contentOffset.x / viewSize.width);
         // Increasing one because of pageNum is starting from zero
+        positionX = contentOffset.x
         pageNum++;
-        setCopyPageNumber(pageNum)
         setPageNumber(pageNum)
     }
 
-    const addBookmark = () => {
-        if (!isEnabledFavorite) {
-            alert("To use the bookmark, please add to the favorites")
-        }
-        db.updateData(book.title, pageNumber).then(res => {
-        }).catch(er => {
-            console.log(er);
-        })
-        setCopyPageNumber(comingPage)
-    }
+
     return (
         <View style={[styles.container, { backgroundColor: darkMode, }]}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Image source={{ uri: book.imageurl }} style={styles.image} />
-                <View >
-                    <Text selectable style={[styles.title, { color: color }]}>{book.title} </Text>
-                </View>
-                <View style={{ marginTop: hp('2%'), marginRight: 10 }}>
+            <View style={styles.header}>
+                <Text selectable style={[styles.title, { color: color }]}>{book.title}</Text>
+                <Text style={{ fontSize: hp('1.8%'), color }}>{pageNumber} / {parseInt(pageSize)} </Text>
+                <View style={{ marginRight: 15 }}>
                     <Icon onPress={onClickSetting} name="font" size={24} color="orange" />
                 </View>
             </View>
-
-            <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
-                <Icon onPress={addBookmark} name={copyPageNumber === comingPage ? "bookmark" : "bookmark-o"} size={wp('5%')} />
-                <Text style={{ textAlign: 'center', marginLeft: 15, fontSize: wp('4%') }}>{pageNumber} / {parseInt(pageSize)} </Text>
-            </View>
-            <ScrollView >
+            <View style={{ borderWidth: 0.2, borderColor: 'grey', marginTop: 10 }} />
+            <ScrollView>
                 <BookPagesScroll
                     page={bookContent}
                     onTextPress={onTextPress}
                     onScrollEnd={onScrollEnd}
-                    comingPage={comingPage}
                     pageNumber={pageNumber}
                     fontSize={fontSize}
+                    title={book.title}
                     justify={justify}
-                    color={color} />
+                    color={color}
+                    scRef={scRef} />
             </ScrollView>
             <SettingModal
                 onClickTextZoom={onClickTextZoom}
@@ -203,20 +191,20 @@ export const Reading = ({ route, navigation }) => {
 }
 const styles = StyleSheet.create({
     container: {
-        paddingTop: 10,
+        flex: 1,
         paddingLeft: 5,
-
+        paddingTop: 10,
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingLeft: 5
     },
     title: {
-        fontSize: wp('7%'),
+        fontSize: hp('2.3%'),
         fontFamily: 'Roboto-Medium',
-        marginTop: 8,
+        marginLeft: 5,
+        flexShrink: 1,
     },
-    image: {
-        height: hp('8%'),
-        width: wp('15%'),
-        borderRadius: 50,
-        marginTop: 3,
-        marginLeft: 5
-    }
 })

@@ -6,7 +6,7 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-nat
 const SettingModal = (props) => {
     return (
         props.visibleSetting ? <View style={styles.modal}>
-             <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end' }}>
+            <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end' }}>
                 <View style={{ flex: 0.3, padding: 5 }}>
                     <Icon name="search-plus" size={24} color="white" onPress={() => props.onClickTextZoom()} />
                 </View>
@@ -32,11 +32,11 @@ const SettingModal = (props) => {
                 </View>
             </View>
             <View style={styles.lineStyle} />
-            <View style={{ flex: 1, marginLeft: 10, marginTop: 10, flexDirection: 'row' }}>
-                <View style={{ flex: 0.7 }}>
+            <View style={{ flex: 1, marginLeft: 10,  flexDirection: 'row' ,alignItems: 'center' }}>
+                <View style={{ flex: 0.7,flexDirection:'row', alignItems: 'center' }}>
+                    <Icon name={props.isEnabledDark ? "moon-o" : "sun-o"} size={24} color="black" />
                     <Text style={styles.text}>
-                        <Icon name={props.isEnabledDark ? "moon-o" : "sun-o"} size={24} color="black"  />
-                                Dark Mode
+                        Dark Mode
                     </Text>
                 </View>
                 <View style={{ flex: 0.3 }}>
@@ -50,11 +50,11 @@ const SettingModal = (props) => {
                 </View>
             </View>
             <View style={styles.lineStyle} />
-            <View style={{ flex: 1, marginLeft: 10, marginTop: 10, flexDirection: 'row' }}>
-                <View style={{ flex: 0.8 }}>
+            <View style={{ flex: 1, marginLeft: 10,  flexDirection: 'row',alignItems: 'center' }}>
+                <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+                    <Icon name={props.isEnabledFavorite ? "star" : "star-o"} size={24} color="orange" />
                     <Text style={styles.text}>
-                        <Icon name={props.isEnabledFavorite ? "star" : "star-o"} size={24} color="orange" />
-                                Add To Favorite
+                        Add To Favorite
                     </Text>
                 </View>
                 <View style={{ flex: 0.3 }}>
@@ -74,10 +74,10 @@ const SettingModal = (props) => {
 const styles = StyleSheet.create({
     modal: {
         position: 'absolute',
-        padding: 5,
-        top: hp('12%'),
+        padding: 15,
+        top: hp('5%'),
         backgroundColor: '#273746',
-        marginLeft: wp('30%'),
+        left: wp('32%'),
         height: hp('25%'),
         width: wp('60')
     },
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontFamily: 'Roboto-Medium',
         color: 'white',
-        
+        marginLeft:10
     }
 })
 
